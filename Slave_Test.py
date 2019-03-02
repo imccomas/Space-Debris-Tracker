@@ -13,7 +13,7 @@ def i2cInterrupt():
    status, bytes_read, data = pi.bsc_i2c(slave_addr) 
 
    if bytes_read:
-      doYourThing(data)
+      print("Hello World. Request Recieved")
 
 pi = pigpio.pi()
 int_handler = pi.event_callback(pigpio.EVENT_BSC, i2cInterrupt)
