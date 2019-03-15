@@ -18,3 +18,5 @@ def i2cInterrupt():
 pi = pigpio.pi()
 int_handler = pi.event_callback(pigpio.EVENT_BSC, i2cInterrupt)
 pi.bsc_i2c(slave_addr)
+
+#Test
