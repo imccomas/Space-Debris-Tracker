@@ -12,7 +12,7 @@ def i2cInterrupt():
     global slave_addr
     status, bytes_read, data = pi.bsc_i2c(slave_addr) 
 
-    if bytes_read:
+    while bytes_read is True: #was just 'if bytes_read:'
         print("Hello World. Request Recieved")
 
 pi = pigpio.pi()

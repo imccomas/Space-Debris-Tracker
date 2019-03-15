@@ -9,7 +9,7 @@ import smbus
 channel = 1
 
 #  MCP4725 defaults to address 0x60
-address = 0x60
+address = 0x08
 
 # Register addresses (with "normal mode" power-down bits)
 reg_write_dac = 0x40
