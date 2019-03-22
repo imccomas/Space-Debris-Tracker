@@ -5,7 +5,7 @@ import pigpio
 # Git Test
 pi = None
 
-slave_addr = 0x40  #changed from 0X08 JR
+slave_addr = 0x08
 
 def i2cInterrupt():
     global pi
