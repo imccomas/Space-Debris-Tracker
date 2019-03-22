@@ -5,7 +5,7 @@ import pigpio
 # Git Test
 pi = None
 
-slave_addr = 0x08
+slave_addr = 0x40  #changed from 0X08 JR
 
 def i2cInterrupt():
     global pi
@@ -13,7 +13,7 @@ def i2cInterrupt():
     status, bytes_read, data = pi.bsc_i2c(slave_addr) 
 
     while bytes_read is True: #was just 'if bytes_read:'
-        print("Hello World. Request Recieved")
+        print("Hello World.")
 
 pi = pigpio.pi()
 int_handler = pi.event_callback(pigpio.EVENT_BSC, i2cInterrupt)

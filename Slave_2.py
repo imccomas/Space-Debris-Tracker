@@ -1,6 +1,6 @@
 #include <pigpio.h>
 #include <iostream>
-using namespace std;
+#using namespace std; #Commented out to see what happens JR
 
 
 int main(){
