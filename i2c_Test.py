@@ -28,4 +28,4 @@ for i in range(0x10000):
     msg = [msg, (msg & 0xf) << 4]
 
     # Write out I2C command: address, reg_write_dac, msg[0], msg[1]
-    bus.write_i2c_block_data(address, reg_write_dac, msg)
+    #bus.write_i2c_block_data(address, reg_write_dac, msg)
