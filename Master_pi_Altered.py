@@ -32,7 +32,8 @@ while True and state:
     lines = data.readlines()
     lines = np.array(lines, dtype = np.int16)
     for line in lines:
-        x = float(line)
+        x = line
+    print(x)
     bus.read_i2c_block_data(address, x, np.int(16))
     print ("RPI: Hi Arduino, I sent you a file")
     data.close()
