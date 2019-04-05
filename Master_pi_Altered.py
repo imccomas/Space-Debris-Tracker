@@ -1,6 +1,7 @@
 import RPi.GPIO as GPIO
 import smbus
 import time
+import numpy as np
 # for RPI version 1, use "bus = smbus.SMBus(0)"
 bus = smbus.SMBus(1)
 GPIO.setmode(GPIO.BOARD) #sets pin to sense when to transmit
@@ -15,7 +16,7 @@ def writeNumber(data): # changed value to data JR
     #Bypassing function, JR
     #bus.write_byte(address, data) #Same JR
     #bus.write_word_data(address, info)
-    bus.read_i2c_block_data(address, lines, int(32))
+    bus.read_i2c_block_data(address, lines, dtype = np.int(16))
     data.close()
     return -1
 
@@ -29,12 +30,14 @@ while True and state:
     #if state:
     data = open("Hi.txt" , "r")
     lines = data.readlines()
-    print(len(lines))
+    lines = np.array(lines, dtype = np.int16)
     for line in lines:
-        x = int(line)
-    bus.read_i2c_block_data(address, x, 32)
+        x = float(line)
+    bus.read_i2c_block_data(address, x, np.int(16))
     print ("RPI: Hi Arduino, I sent you a file")
     data.close()
+    
+        
     # sleep one second
     time.sleep(1)
 
