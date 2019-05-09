@@ -49,6 +49,7 @@ def BB_1:
         camera.stop_recording
     return position_bb1
 
+
 def BB_2:
     start_time_bb2 = time.time()
 
@@ -91,7 +92,8 @@ def BB_2:
             elapsed_time = time.time() - start_time_bb2
             
         camera.stop_recording
-    return position_bb2   
+    return position_bb2
+
 
 def BB_3:
     start_time_bb3 = time.time()
@@ -137,6 +139,7 @@ def BB_3:
         camera.stop_recording
     return position_bb3
 
+
 def BB_4:
     start_time_bb4 = time.time()
 
@@ -180,3 +183,4 @@ def BB_4:
             
         camera.stop_recording
     return position_bb4
+
