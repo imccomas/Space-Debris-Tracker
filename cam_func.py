@@ -5,7 +5,7 @@ import time
 import picamera
 
 
-def BB_1:
+def BB_1():
     start_time_bb1 = time.time()
 
     position_bb1 = []
@@ -24,11 +24,11 @@ def BB_1:
         background = np.array(background,dtype=np.int16)
         
 
-        while elapsed_time < 20:
+        while elapsed_time < 10:
             
             elapsed_time = time.time() - start_time_bb1
             
-            camera.wait_recording(3)
+            camera.wait_recording(1)
             camera.capture("new_image.jpg", use_video_port=True)
             
             new_array = Image.open("new_image.jpg")
@@ -50,7 +50,7 @@ def BB_1:
     return position_bb1
 
 
-def BB_2:
+def BB_2():
     start_time_bb2 = time.time()
 
     position_bb2 = []
@@ -95,7 +95,7 @@ def BB_2:
     return position_bb2
 
 
-def BB_3:
+def BB_3():
     start_time_bb3 = time.time()
 
     position_bb3 = []
@@ -140,7 +140,7 @@ def BB_3:
     return position_bb3
 
 
-def BB_4:
+def BB_4():
     start_time_bb4 = time.time()
 
     position_bb4 = []
