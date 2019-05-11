@@ -56,16 +56,19 @@ def bb_1_telemetry():
         #line = np.array(data)
         #lines = data.readlines()
         lines = np.array(data, dtype = np.int16)
+        command = 0x03
+        testList = [2,4,5]
 
         if elapsed_time >= 10:
-            for line in lines:
-                x = line
+            for i in range(4):
+                x = testList
                 print('C1 ', x[0])
                 print('C1 ', x[1])
                 print('C1 ', x[2])
-                bus.read_i2c_block_data(address, x[0])
-                bus.read_i2c_block_data(address, x[1])
-                bus.read_i2c_block_data(address, x[2])
+                bus.write_i2c_block_data(address,command,testList)
+                time.sleep(.5)
+                #bus.write_i2c_block_data(address,command, 12)
+                #bus.write_i2c_block_data(address,command, 7)
                 #print ("RPI: Hi Arduino, I sent you a file")
             #data.close()
 
@@ -161,7 +164,7 @@ def bb_4_telemetry():
             time.sleep(2)
             break
 
-time.sleep(5)
+time.sleep(2)
 
 start_time_bb1 = time.time()   
 bb_1_telemetry()
