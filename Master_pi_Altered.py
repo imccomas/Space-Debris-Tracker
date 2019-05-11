@@ -60,9 +60,9 @@ def bb_1_telemetry():
         if elapsed_time >= 10:
             for line in lines:
                 x = line
-                print(x[0])
-                print(x[1])
-                print(x[2])
+                print('C1 ', x[0])
+                print('C1 ', x[1])
+                print('C1 ', x[2])
                 bus.read_i2c_block_data(address, x[0])
                 bus.read_i2c_block_data(address, x[1])
                 bus.read_i2c_block_data(address, x[2])
@@ -78,72 +78,102 @@ def bb_2_telemetry():
     while True and state:
         
         #if state:
-        #data = cf.BB_1
-        data = open("Hi.txt", "r")
-        lines = data.readlines()
-        lines = np.array(lines, dtype = np.int16)
+        data = cf.BB_2()
+        elapsed_time = time.time() - start_time_bb2
+        time.sleep(1)
+        #data = open("Hi.txt", "r")
+        #line = np.array(data)
+        #lines = data.readlines()
+        lines = np.array(data, dtype = np.int16)
 
-        for line in lines:
-            x = line
-            print(x)
-            bus.read_i2c_block_data(address, x)
-            #print ("RPI: Hi Arduino, I sent you a file")
-        data.close()
-        break
+        if elapsed_time >= 21:
+            for line in lines:
+                x = line
+                print('C2 ', x[0])
+                print('C2 ', x[1])
+                print('C2 ', x[2])
+                bus.read_i2c_block_data(address, x[0])
+                bus.read_i2c_block_data(address, x[1])
+                bus.read_i2c_block_data(address, x[2])
+                #print ("RPI: Hi Arduino, I sent you a file")
+            #data.close()
+
             
-        # sleep one second
-        time.sleep(2)
+            # sleep one second
+            time.sleep(2)
+            break
 
 def bb_3_telemetry():
     while True and state:
         
         #if state:
-        #data = cf.BB_1
-        data = open("Hi.txt", "r")
-        lines = data.readlines()
-        lines = np.array(lines, dtype = np.int16)
-        for line in lines:
-            x = line
-            print(x)
-            bus.read_i2c_block_data(address, x)
-            #print ("RPI: Hi Arduino, I sent you a file")
-        data.close()
+        data = cf.BB_3()
+        elapsed_time = time.time() - start_time_bb3
+        time.sleep(1)
+        #data = open("Hi.txt", "r")
+        #line = np.array(data)
+        #lines = data.readlines()
+        lines = np.array(data, dtype = np.int16)
+
+        if elapsed_time >= 31:
+            for line in lines:
+                x = line
+                print('C3 ', x[0])
+                print('C3 ', x[1])
+                print('C3 ', x[2])
+                bus.read_i2c_block_data(address, x[0])
+                bus.read_i2c_block_data(address, x[1])
+                bus.read_i2c_block_data(address, x[2])
+                #print ("RPI: Hi Arduino, I sent you a file")
+            #data.close()
 
             
-        # sleep one second
-        time.sleep(2)
-        break
+            # sleep one second
+            time.sleep(2)
+            break
     
 def bb_4_telemetry():
     while True and state:
         
         #if state:
-        #data = cf.BB_1
-        data = open("Hi.txt", "r")
-        lines = data.readlines()
-        lines = np.array(lines, dtype = np.int16)
-        for line in lines:
-            x = line
-            print(x)
-            bus.read_i2c_block_data(address, x)
-            #print ("RPI: Hi Arduino, I sent you a file")
-        data.close()
+        data = cf.BB_4()
+        elapsed_time = time.time() - start_time_bb4
+        time.sleep(1)
+        #data = open("Hi.txt", "r")
+        #line = np.array(data)
+        #lines = data.readlines()
+        lines = np.array(data, dtype = np.int16)
+
+        if elapsed_time >= 41:
+            for line in lines:
+                x = line
+                print('C4 ', x[0])
+                print('C4 ', x[1])
+                print('C4 ', x[2])
+                bus.read_i2c_block_data(address, x[0])
+                bus.read_i2c_block_data(address, x[1])
+                bus.read_i2c_block_data(address, x[2])
+                #print ("RPI: Hi Arduino, I sent you a file")
+            #data.close()
 
             
-        # sleep one second
-        time.sleep(2)
-        break
+            # sleep one second
+            time.sleep(2)
+            break
 
 time.sleep(5)
 
 start_time_bb1 = time.time()   
 bb_1_telemetry()
 
-bb_2_telemetry()
-time.sleep(1)
+#start_time_bb2 = time.time()
+#bb_2_telemetry()
+#time.sleep(1)
 
-bb_3_telemetry()
-time.sleep(1)
+#start_time_bb3 = time.time()
+#bb_3_telemetry()
+#time.sleep(1)
 
-bb_4_telemetry()
-time.sleep(1)
+#start_time_bb4 = time.time()
+#bb_4_telemetry()
+#time.sleep(1)
