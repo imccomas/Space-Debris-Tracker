@@ -1,4 +1,4 @@
-// Rocksat-x 2019 Control board software
+// Rocksat-x 2019 Primary Motherboard software
 // ---
 // By: Ryan Wade
 // ---
@@ -52,7 +52,7 @@ typedef union
 
 const int SERVOS[5] = { PWM_S0, PWM_S1, PWM_S2, PWM_S3, PWM_S4 };
 Servo myServos[5];
-uint8_t sequence = 0;
+uint8_t sequence = 0, launchNum = 0;
 unsigned long lastTempSend, timeCompleted = 0, nextEvent = 0;
 bool started = false, rbf = true;
 
@@ -114,7 +114,10 @@ void setup() {
 }
 
 void loop() {
+
+  // ----------------
   // Check if event timer has ended
+  // ----------------
   if (nextEvent != 0 && nextEvent >= millis()) { // Time has elapsed for next event
 
     switch (sequence) { // Sequence of events that occur.
@@ -178,7 +181,7 @@ void loop() {
       case 10: // Read Pi data
         digitalWrite(LIGHTS, LOW);
         getPiData();
-        nextEvent = millis() + 500;
+        nextEvent = millis() + 100;
         ++sequence;
         break;
 
@@ -203,12 +206,11 @@ void loop() {
       case 14: // Read Pi data
         digitalWrite(LIGHTS, LOW);
         getPiData();
-        nextEvent = millis() + 500;
-        ++sequence;
+        nextEvent = 0; // End of sequence
         break;
 
-      default: // End of sequence
-        nextEvent = 0;
+      default:
+        // Something bad has happened if execution hits here
         break;
     }
   }
@@ -289,7 +291,7 @@ void launch (uint8_t servo) {
   digitalWrite(SERVOS[servo], HIGH); // Arm launcher servo
 
   if (rbf || digitalRead(RBF == HIGH)) { // Only move if inhibitor is not present
-    
+
     for (int i = LAUNCHER_HOME_POS; i < LAUNCHER_FINAL_POS; ++i) { // Move servo from home posistion to launched posistion
 
       myServos[servo].write(i);
@@ -298,6 +300,7 @@ void launch (uint8_t servo) {
   }
 
   digitalWrite(SERVOS[servo], LOW); // Disarm launcher servo
+  ++launchNum;
 
 }
 
@@ -325,11 +328,15 @@ void getPiData() {
   Wire.begin(SLAVE_ADR); // Open I2C bus as a slave
 
   digitalWrite(PI1_TRIG, HIGH); // Tell Pi #1 we are ready for data
+  delay(20);
+  digitalWrite(PI1_TRIG, LOW); // Bring trigger line back low
 
   while (!Wire.available()) { // Wait for data in buffer
-    delay(5);
+    delay(1);
   }
-  Serial.println(F("******** BEGIN PI #1 DATA ********"));
+  Serial.print(F("******** BEGIN LAUNCH #"));
+  Serial.print(launchNum);
+  Serial.println(F(" PI #1 DATA ********"));
 
   while (Wire.available()) { // Read data in buffer
     Serial.print(Wire.read()); // Move buffer data directly to telem line
@@ -337,22 +344,24 @@ void getPiData() {
   Serial.println();
   Serial.println(F("******** END PI #1 DATA ********"));
 
-  digitalWrite(PI1_TRIG, LOW); // Bring trigger line back low
+
 
   digitalWrite(PI2_TRIG, HIGH); // Tell Pi #2 we are ready for data
+  delay(20);
+  digitalWrite(PI2_TRIG, LOW); // Bring trigger line back low
 
   while (!Wire.available()) { // Wait for data in buffer
-    delay(5);
+    delay(1);
   }
-  Serial.println(F("******** BEGIN PI #2 DATA ********"));
+  Serial.print(F("******** BEGIN LAUNCH #"));
+  Serial.print(launchNum);
+  Serial.println(F(" PI #2 DATA ********"));
 
   while (Wire.available()) { // Read data in buffer
     Serial.print(Wire.read()); // Move buffer data directly to telem line
   }
   Serial.println();
   Serial.println(F("******** END PI #2 DATA ********"));
-
-  digitalWrite(PI2_TRIG, LOW); // Bring trigger line back low
 
   Wire.end(); // End slave mode
   Wire.begin(); // Return to master mode
