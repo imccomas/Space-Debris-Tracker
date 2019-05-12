@@ -53,9 +53,12 @@ void loop() {
 
 // Sends single line of data seperated by tabs with all 5 temps followed by a new line
 void sendTempTelem(float *temps) {
+  Serial.print(millis());
+  Serial.print('\t');
   for (int i = 0; i < 5; ++i) { 
     Serial.print(F("T"));
     Serial.print(i - 1);
+    Serial.print(F(": "));
     Serial.print(temps[i]);
     Serial.print(F("\t"));
   }
