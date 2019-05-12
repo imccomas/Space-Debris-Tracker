@@ -1,6 +1,6 @@
 // Rocksat-x 2019 Primary Motherboard software
 // ---
-// By: Ryan Wade
+// Written by: Ryan Wade
 // ---
 // This program controls CCofCO's rocksat-x payload, as well as telemeters data to the rocket
 
@@ -115,10 +115,51 @@ void setup() {
 
 void loop() {
 
+  // ---------------------
+  //   TEMP PROBE READ/TELEMETRY OUT
+  // --------------------
+  if (lastTempSend <= millis() + SAMPLE_RATE) {
+
+    float probeData[5];
+
+    for (uint8_t i = 1; i <= 5; ++i) { // Loop through all 5 Temp Probes
+
+      FLOATUNION_t data;
+
+      Wire.beginTransmission(TEENSY_ADR); // Request 8 bytes from Teensy
+      Wire.write(i); // Tell Tensy which probe temp we want
+      Wire.endTransmission(); // Send data
+      Wire.requestFrom(TEENSY_ADR, 4); // Request temp data from teensy
+
+      for (int z = 0; z < 4; ++z) {
+        data.bytes[z] = Wire.read(); //Read 4 bytes
+      }
+      probeData[i - 1] = data.number; // Save float into data array for telemetry
+    }
+    lastTempSend = millis(); // Update last temp send
+    sendTempTelem(probeData);
+  }
+
+  // ------------------
+  // Experiment START code
+  // ------------------
+  else if (!started && digitalRead(START) == HIGH) { // Experiment start condition met
+
+    started = true;
+
+    Serial.println(F("*************************"));
+    Serial.print(F("START Command received at "));
+    Serial.print(millis());
+    Serial.println(F("ms."));
+    Serial.println(F("*************************"));
+    sequence = 1; // Set flag to start value
+    nextEvent = millis() + 1000; // Begin next event in 1 second
+  }
+
   // ----------------
   // Check if event timer has ended
   // ----------------
-  if (nextEvent != 0 && nextEvent >= millis()) { // Time has elapsed for next event
+  else if (nextEvent != 0 && nextEvent >= millis()) { // Time has elapsed for next event
 
     switch (sequence) { // Sequence of events that occur.
 
@@ -131,7 +172,7 @@ void loop() {
       case 2: // Read data from PIs
         digitalWrite(LIGHTS, LOW); //Turn off chamber lighting
         getPiData();
-        nextEvent = millis() + 500;
+        nextEvent = millis() + 100;
         ++sequence;
         break;
 
@@ -156,7 +197,7 @@ void loop() {
       case 6: // Read Pi data
         digitalWrite(LIGHTS, LOW);
         getPiData();
-        nextEvent = millis() + 500;
+        nextEvent = millis() + 100;
         ++sequence;
         break;
 
@@ -214,52 +255,12 @@ void loop() {
         break;
     }
   }
-
-  // ------------------
-  // Experiment START code
-  // ------------------
-  else if (!started && digitalRead(START) == HIGH) { // Experiment start condition met
-
-    started = true;
-
-    Serial.println(F("*************************"));
-    Serial.print(F("START Command received at "));
-    Serial.print(millis());
-    Serial.println(F("ms."));
-    Serial.println(F("*************************"));
-    sequence = 1; // Set flag to start value
-    nextEvent = millis() + 1000; // Begin next event in 1 second
-
-  }
-  // ---------------------
-  //   TEMP PROBE READ/TELEMETRY OUT
-  // --------------------
-  else if (lastTempSend <= millis() + SAMPLE_RATE) {
-
-    float probeData[5];
-
-    for (uint8_t i = 1; i <= 5; ++i) { // Loop through all 5 Temp Probes
-
-      FLOATUNION_t data;
-
-      Wire.beginTransmission(TEENSY_ADR); // Request 8 bytes from Teensy
-      Wire.write(i); // Tell Tensy which probe temp we want
-      Wire.endTransmission(); // Send data
-      Wire.requestFrom(TEENSY_ADR, 4); // Request temp data from teensy
-
-      for (int z = 0; z < 4; ++z) {
-        data.bytes[z] = Wire.read(); //Read 4 bytes
-      }
-      probeData[i - 1] = data.number; // Save float into data array for telemetry
-    }
-    lastTempSend = millis(); // Update last temp send
-    sendTempTelem(probeData);
-  }
 }
+
 // --------------------------------------------------------------------
 // Sends single formatted stream of data seperated by tabs with a timestamp then all 5 temps followed by a new line
 // --------------------------------------------------------------------
-void sendTempTelem(float *temps) {
+void sendTempTelem(float * temps) {
 
   Serial.print(millis());
 
