@@ -118,7 +118,7 @@ void loop() {
   // ---------------------
   //   TEMP PROBE READ/TELEMETRY OUT
   // --------------------
-  if (lastTempSend <= millis() + SAMPLE_RATE) {
+  if (lastTempSend+ SAMPLE_RATE <= millis() ) {
 
     float probeData[5];
 
