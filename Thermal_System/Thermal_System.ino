@@ -4,10 +4,10 @@
 #include <Adafruit_MAX31865.h>
 #include <pt100rtd.h>
 
-#define RBF_RUNTIME 60000
-#define RREF 400.0
+#define RBF_RUNTIME 60000  // When rbf is hot this controls how long the Experiment stays powered on after TE-1 goes hot (in ms)
+#define RREF 400.0 // REF resistor value, should be 400 Ohms for P100 and 4K Ohms for P1000, but verify exact value on circuit
 #define C2F(c) ((9 * c / 5) + 32)
-#define RATE 250
+#define RATE 250 // Rate temperature readings are written to SD card (in ms)
 #define TRIG 7
 #define U1 8
 #define U2 9
@@ -19,11 +19,13 @@ typedef union
   uint8_t bytes[4];
 } FLOATUNION_t;
 
+// Global vars
 FLOATUNION_t temps[5];
 char filename[16];
 uint8_t probeSelect;
 unsigned long timeStamp, rbfTime;
 bool triggered, rbf;
+// -----------
 
 Adafruit_MAX31865 max_1 = Adafruit_MAX31865(2, 11, 12, 13);
 Adafruit_MAX31865 max_2 = Adafruit_MAX31865(3, 11, 12, 13);
@@ -32,6 +34,7 @@ Adafruit_MAX31865 max_4 = Adafruit_MAX31865(5, 11, 12, 13);
 Adafruit_MAX31865 max_5 = Adafruit_MAX31865(6, 11, 12, 13);
 
 File myFile;
+
 pt100rtd PT100 = pt100rtd() ;
 //const uint8_t chipSelect = BUILTIN_SDCARD;
 
@@ -68,14 +71,20 @@ void setup() {
   }
 
   /******Writing Column Headers******/
-  int n = 0;
-  snprintf(filename, sizeof(filename), "temp%03d.txt", n); // includes a three-digit sequence number in the file name
+  int n = 1;
+  snprintf(filename, sizeof(filename), "temp%03d.txt", n); // includes a three-digit sequenced number in the file name
   while (SD.exists(filename)) {
     n++;
     snprintf(filename, sizeof(filename), "temp%03d.txt", n);
   }
   myFile = SD.open(filename, FILE_WRITE);
-  myFile.print("T1(C)"); myFile.print("\t"); myFile.print("T2(C)"); myFile.print("\t"); myFile.print("T3(C)"); myFile.print("\t"); myFile.print("T4(C)"); myFile.print("\t"); myFile.print("T5(C)"); myFile.print("\t"); myFile.println("Time(ms)");
+
+  for (int i = 0; i < 5; ++i) { // Generate table headers
+    myFile.print('T');
+    myFile.print(i);
+    myFile.print(F("(C)\t"));
+  }
+  myFile.println("Time(ms)");
   myFile.close();
   /***********************************/
 
@@ -95,23 +104,45 @@ void loop() {
 
     if (digitalRead(RBF) == LOW)  { // Nominal condition
 
+      Serial.println(F("Power switchover beginning"));
+      myFile = SD.open(filename, FILE_WRITE);
+      myFile.print(F("Power switchover beginning at "));
+      myFile.print(millis());
+      myFile.println(F(" ms."));
+
       digitalWrite(U1, HIGH);
       digitalWrite(U2, HIGH);
+
+      myFile.print(F("Power Switchover Complete at "));
+      myFile.print(millis());
+      myFile.println(F(" ms."));
+      myFile.close();
       Serial.println(F("Power Switchover Complete"));
     }
     else { // Flight Inhibit condition
 
       rbf = true;
       rbfTime = millis() + RBF_RUNTIME; // Set shutdown time
+      
+      Serial.println(F("Power switchover beginning"));
+      myFile = SD.open(filename, FILE_WRITE);
+      myFile.print(F("RBF power switchover beginning at "));
+      myFile.print(millis());
+      myFile.println(F(" ms."));
+
       digitalWrite(U1, HIGH);
       digitalWrite(U2, HIGH);
 
-      Serial.print(F("RBF Power Switchover Complete. Expiremnt will run for "));
+      myFile.print(F("RBF Power Switchover Complete at "));
+      myFile.print(millis());
+      myFile.println(F(" ms."));
+      myFile.close();
+      Serial.print(F("RBF power switchover complete. Expiremnt will run for "));
       Serial.print(RBF_RUNTIME / 1000);
       Serial.println(F(" seconds."));
     }
   }
-  
+
   if (rbf && millis() >= rbfTime) { // Shutdown time elapsed
 
     digitalWrite(U2, LOW); // Turn off battery relay
