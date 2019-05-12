@@ -7,19 +7,25 @@
 #include <Wire.h>
 #include <Servo.h>
 
+/*-- Actuator values --*/
 #define LAUNCHER_HOME_POS 90 // Home posistion for servos (retaining ball)
 #define LAUNCHER_FINAL_POS 180 // Final posistion for launcher servo
 #define LAUNCHER_VELOCITY_DELAY 25 // Delay between angle changes on launchers to achive desired velocity (in ms)
 #define CHARGER_HOME_POS 90 // Home posistion for charging assembly servo
 #define CHARGER_ACTIVE_POS 180 // Charging posistion for motor servo
 #define CHARGE_POS 90 // Charger servo posistion for active charging
+#define CHARGE_TIME 250 // Time to run charger aparatus (in ms)
+/*-----------------------*/
+
+/*-- uC values  --*/
 #define SAMPLE_RATE 500 // Rate at which probes are read (in ms)
 #define TEENSY_ADR 0x66 // I2C address of Teensy board
 #define SLAVE_ADR 0x10 // Slave address used by arduino in slave mode
 #define BAUD_RATE 19200 // Rocket telemetry rate
 #define PROCESSING_TIME 5000 // Time delay before asking PIs for data after launch (in ms)
+/*-----------------------*/
 
-//-- Pin definitions --
+/*-- Pin definitions --*/
 #define START 2 // TE-1 signal line
 #define PWM_S0 3 // Servo 0 signal pin (motor servo)
 #define RBF 4 // Remove before flight pin
@@ -36,7 +42,7 @@
 #define SERVO1 15 // Servo 1 powerline control pin
 #define MTR_SRVO 16 // Motor position servo powerline control pin
 #define MTR 17 // Motor power control pin
-//-----------------------
+/*-----------------------*/
 
 typedef union
 {
@@ -44,11 +50,11 @@ typedef union
   uint8_t bytes[4];
 } FLOATUNION_t;
 
-const int SERVOS[5] = { PWM_S0, PWM_S1, PWM_S2, PWM_S3, PWM_S4 }; 
+const int SERVOS[5] = { PWM_S0, PWM_S1, PWM_S2, PWM_S3, PWM_S4 };
 Servo myServos[5];
 uint8_t sequence = 0;
 unsigned long lastTempSend, timeCompleted = 0, nextEvent = 0;
-bool started = false;
+bool started = false, rbf = true;
 
 void setup() {
   Wire.begin();
@@ -102,6 +108,8 @@ void setup() {
   // ---------------
 
 
+  if (digitalRead(RBF) == HIGH) rbf = false;
+
   lastTempSend = 0;
 }
 
@@ -109,16 +117,98 @@ void loop() {
   // Check if event timer has ended
   if (nextEvent != 0 && nextEvent >= millis()) { // Time has elapsed for next event
 
-    switch (sequence) {
+    switch (sequence) { // Sequence of events that occur.
+
       case 1: // Launch Control tube #1
         launch(1);
         nextEvent = millis() + PROCESSING_TIME; // Time (in ms) until next experiment event begins
         ++sequence;
         break;
+
       case 2: // Read data from PIs
         digitalWrite(LIGHTS, LOW); //Turn off chamber lighting
         getPiData();
+        nextEvent = millis() + 500;
         ++sequence;
+        break;
+
+      case 3: // Begin charging plate for first lauch
+        beginCharging();
+        nextEvent = millis() + CHARGE_TIME;
+        ++sequence;
+        break;
+
+      case 4: // End Charging
+        endCharging();
+        nextEvent = millis() + 100;
+        ++sequence;
+        break;
+
+      case 5: // Launch tube #2
+        launch(2);
+        nextEvent = millis() + PROCESSING_TIME;
+        ++sequence;
+        break;
+
+      case 6: // Read Pi data
+        digitalWrite(LIGHTS, LOW);
+        getPiData();
+        nextEvent = millis() + 500;
+        ++sequence;
+        break;
+
+      case 7: // Recharge plate
+        beginCharging();
+        nextEvent = millis() + CHARGE_TIME;
+        ++sequence;
+        break;
+
+      case 8: // End Charging
+        endCharging();
+        nextEvent = millis() + 100;
+        ++sequence;
+        break;
+
+      case 9: // Launch tube #3
+        launch(3);
+        nextEvent = millis() + PROCESSING_TIME;
+        ++sequence;
+        break;
+
+      case 10: // Read Pi data
+        digitalWrite(LIGHTS, LOW);
+        getPiData();
+        nextEvent = millis() + 500;
+        ++sequence;
+        break;
+
+      case 11: // Recharge plate
+        beginCharging();
+        nextEvent = millis() + CHARGE_TIME;
+        ++sequence;
+        break;
+
+      case 12: // End Charging
+        endCharging();
+        nextEvent = millis() + 100;
+        ++sequence;
+        break;
+
+      case 13: // Launch tube #4
+        launch(3);
+        nextEvent = millis() + PROCESSING_TIME;
+        ++sequence;
+        break;
+
+      case 14: // Read Pi data
+        digitalWrite(LIGHTS, LOW);
+        getPiData();
+        nextEvent = millis() + 500;
+        ++sequence;
+        break;
+
+      default: // End of sequence
+        nextEvent = 0;
         break;
     }
   }
@@ -185,7 +275,7 @@ void sendTempTelem(float *temps) {
 // Runs the sequence of commands required to launch a tube
 // --------------------
 void launch (uint8_t servo) {
-  
+
   // Signal PIs that we are beginning the experiment,
   // and they should begin recording for debris launch
   digitalWrite(PI1_TRIG, HIGH);
@@ -198,26 +288,31 @@ void launch (uint8_t servo) {
   myServos[servo].write(LAUNCHER_HOME_POS); // Make sure servo wants to travel to home posistion
   digitalWrite(SERVOS[servo], HIGH); // Arm launcher servo
 
-  for (int i = LAUNCHER_HOME_POS; i < LAUNCHER_FINAL_POS; ++i) {
-    myServos[servo].write(i);
-    delay(LAUNCHER_VELOCITY_DELAY);
-  }
-  
-  
+  if (rbf || digitalRead(RBF == HIGH)) { // Only move if inhibitor is not present
+    
+    for (int i = LAUNCHER_HOME_POS; i < LAUNCHER_FINAL_POS; ++i) { // Move servo from home posistion to launched posistion
 
-  //INSERT: Code to move servo at set rate.
+      myServos[servo].write(i);
+      delay(LAUNCHER_VELOCITY_DELAY);
+    }
+  }
+
+  digitalWrite(SERVOS[servo], LOW); // Disarm launcher servo
 
 }
 
 void beginCharging() {
   digitalWrite(MTR, HIGH); // Turn on motor
   digitalWrite(MTR_SRVO, HIGH); // Turn on power to motor servo
-  // INSERT: Move servo to charge posistion
+  myServos[0].write(CHARGER_ACTIVE_POS); // Move servo to charging posistion
 }
 
 void endCharging() {
+  myServos[0].write(CHARGER_HOME_POS); // Move servo to home posistion
+  delay(200); // Wait for servo to move
+  digitalWrite(MTR, LOW); // Turn off motor
+  digitalWrite(MTR_SRVO, LOW); // Turn off motor servo
 
-  // INSERT: Move servo to home posistion
 }
 
 // --------------------
@@ -226,7 +321,8 @@ void endCharging() {
 // --------------------
 void getPiData() {
 
-  Wire.begin(SLAVE_ADR);
+  Wire.end(); // End current I2C Bus
+  Wire.begin(SLAVE_ADR); // Open I2C bus as a slave
 
   digitalWrite(PI1_TRIG, HIGH); // Tell Pi #1 we are ready for data
 
@@ -258,5 +354,6 @@ void getPiData() {
 
   digitalWrite(PI2_TRIG, LOW); // Bring trigger line back low
 
+  Wire.end(); // End slave mode
   Wire.begin(); // Return to master mode
 }
