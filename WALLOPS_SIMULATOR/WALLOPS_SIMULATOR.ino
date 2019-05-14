@@ -21,9 +21,10 @@ typedef union {
 
 ULONGUNION_t configs[8], timers[4], timerStart[4], timerEnd[4];
 BOOLUNION_t logging;
-bool launched, relays[4];
+bool launched, relays[4], liveFeed = false;
 File file;
 char filename[16];
+const String relayNames[4] = { "GSE", "RA", "RB", "TE-1" };
 
 void setup() {
 
@@ -85,13 +86,17 @@ void loop() {
   {
     unsigned long timeNow = millis();
     for (int i = 0; i < 4; ++i) {
-      if (timeNow > timerStart[i].number && relays[i] == false) { // Time to turn on relay
+      if (timeNow > timerStart[i].number && relays[i] == false  && timeNow < timerEnd[i].number) { // Time to turn on relay
         digitalWrite(GSE + i, LOW);
+        Serial.print(F("Turning on "));
+        Serial.println(relayNames[i]);
         relays[i] = true;
       }
       else if (timeNow > timerEnd[i].number && relays[i] == true) { // Time to turn off relay
         digitalWrite(GSE + i, HIGH);
-        relays[i] = true;
+        Serial.print(F("Turning off "));
+        Serial.println(relayNames[i]);
+        relays[i] = false;
       }
     }
   }
@@ -118,7 +123,8 @@ void menuLoop() {
     {
       delay(5);
     }
-    char input = Serial.read(); // Store first byte in seial buffer
+    char input = Serial.read();
+    Serial.println(input);
     serialFlush();
 
     switch (input) {
@@ -233,22 +239,63 @@ bool loadConfig() {
 }
 
 bool writeConfig() {
-  file = SD.open("setup.bin", (O_WRITE | O_CREAT | O_TRUNC));
-  if (!file) {
+  Serial.println(F("\n---------------------------\n"));
+  Serial.println(F("1. Save to default"));
+  Serial.println(F("2. Save to file"));
+  Serial.println(F("3. Back"));
+  Serial.print(F("Choose: "));
+  int f = getIntInput();
+  Serial.println(f);
+  if (f == 1) {
+    file = SD.open("setup.bin", (O_WRITE | O_CREAT | O_TRUNC));
+    if (!file) {
+      return false;
+    }
+    for (int i = 0; i < 4; ++i) {
+      configs[i].number = timers[i].number;
+      configs[i + 4].number = timerStart[i].number;
+    }
+    for (int i = 0; i < 8; ++i) {
+      for (int z = 0; z < 4; ++z) {
+        file.write(configs[i].bytes[z]);
+      }
+    }
+    file.write(logging.number);
+    file.close();
+    return true;
+  }
+  else if (f == 2) {
+
+    char customConfigName[16];
+    int n = 1;
+    snprintf(customConfigName, sizeof(customConfigName), "config%03d.bin", n); // includes a three-digit sequenced number in the file name
+    while (SD.exists(customConfigName)) {
+      n++;
+      snprintf(customConfigName, sizeof(customConfigName), "config%03d.bin", n);
+    }
+    file = SD.open(customConfigName, (O_WRITE | O_CREAT | O_TRUNC));
+    if (!file) {
+      return false;
+    }
+    for (int i = 0; i < 4; ++i) {
+      configs[i].number = timers[i].number;
+      configs[i + 4].number = timerStart[i].number;
+    }
+    for (int i = 0; i < 8; ++i) {
+      for (int z = 0; z < 4; ++z) {
+        file.write(configs[i].bytes[z]);
+      }
+    }
+    file.write(logging.number);
+    file.close();
+    Serial.print(F("File saved as: "));
+    Serial.println(customConfigName);
+    return true;
+  }
+  else if (f == 3) {
     return false;
   }
-  for (int i = 0; i < 4; ++i) {
-    configs[i].number = timers[i].number;
-    configs[i + 4].number = timerStart[i].number;
-  }
-  for (int i = 0; i < 8; ++i) {
-    for (int z = 0; z < 4; ++z) {
-      file.write(configs[i].bytes[z]);
-    }
-  }
-  file.write(logging.number);
-  file.close();
-  return true;
+  else writeConfig();
 }
 bool setTimerEvents() {
   Serial.println(F("\nSet any dwell time to 0 to disable."));
@@ -305,6 +352,11 @@ void editTelem() {
   else if (inString[0] == 'N') {
     Serial.println('N');
     logging.bools = false;
+  }
+  else {
+    Serial.println(inString[0]);
+    Serial.println(F("Try again."));
+    editTelem();
   }
 }
 void displayTimers() {
