@@ -13,6 +13,8 @@
 #define U2 9
 #define RBF 10
 
+const int chipSelect = BUILTIN_SDCARD;
+
 typedef union
 {
   float number;
@@ -65,7 +67,7 @@ void setup() {
 
   Serial.print("Initializing SD card...");
 
-  if (!SD.begin()) {
+  if (!SD.begin(chipSelect)) {
     Serial.println("initialization failed!");
     return;
   }

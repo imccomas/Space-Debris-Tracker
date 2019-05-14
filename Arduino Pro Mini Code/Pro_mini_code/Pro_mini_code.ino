@@ -118,7 +118,7 @@ void loop() {
   // ---------------------
   //   TEMP PROBE READ/TELEMETRY OUT
   // --------------------
-  if (lastTempSend+ SAMPLE_RATE <= millis() ) {
+  if (lastTempSend + SAMPLE_RATE <= millis() ) {
 
     float probeData[5];
 
@@ -126,7 +126,7 @@ void loop() {
 
       FLOATUNION_t data;
 
-      Wire.beginTransmission(TEENSY_ADR); // Request 8 bytes from Teensy
+      Wire.beginTransmission(TEENSY_ADR); // Request from Teensy
       Wire.write(i); // Tell Tensy which probe temp we want
       Wire.endTransmission(); // Send data
       Wire.requestFrom(TEENSY_ADR, 4); // Request temp data from teensy
@@ -344,8 +344,6 @@ void getPiData() {
   }
   Serial.println();
   Serial.println(F("******** END PI #1 DATA ********"));
-
-
 
   digitalWrite(PI2_TRIG, HIGH); // Tell Pi #2 we are ready for data
   delay(20);
