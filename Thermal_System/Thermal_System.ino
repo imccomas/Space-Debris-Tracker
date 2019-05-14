@@ -17,7 +17,7 @@ const int chipSelect = BUILTIN_SDCARD;
 
 typedef union
 {
-  float number;
+  int32_t number;
   uint8_t bytes[4];
 } FLOATUNION_t;
 
