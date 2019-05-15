@@ -368,13 +368,13 @@ void displayTimers() {
   Serial.print(F("\t\tDwell time: "));
   Serial.print(timers[1].number / 1000L);
   Serial.print(F("\t\tDwell time: "));
-  Serial.println(timers[2].number / 1000L);
+  Serial.println(timers[3].number / 1000L);
   Serial.print(F("\tStart time: "));
   Serial.print(timerStart[0].number / 1000L);
   Serial.print(F("\t\tStart time: "));
   Serial.print(timerStart[1].number / 1000L);
   Serial.print(F("\t\tStart time: "));
-  Serial.println(timerStart[2].number / 1000L);
+  Serial.println(timerStart[3].number / 1000L);
   Serial.println('\n');
 }
 
