@@ -38,10 +38,10 @@
 #define LIGHTS 11 //  Light relay line
 #define SERVO4 12 // Servo 4 powerline control pin
 #define SERVO3 13 // Servo 3 powerline control pin
-#define SERVO2 14 // Servo 2 powerline control pin
-#define SERVO1 15 // Servo 1 powerline control pin
-#define MTR_SRVO 16 // Motor position servo powerline control pin
-#define MTR 17 // Motor power control pin
+#define SERVO2 A0 // Servo 2 powerline control pin
+#define SERVO1 A1 // Servo 1 powerline control pin
+#define MTR_SRVO A2 // Motor position servo powerline control pin
+#define MTR A3 // Motor power control pin
 /*-----------------------*/
 
 typedef union
@@ -94,7 +94,7 @@ void setup() {
   // ---------------
 
   // Attach Servos
-  myServos[0].attach(MTR_SRVO);
+  myServos[0].attach(PWM_S0);
   myServos[1].attach(PWM_S1);
   myServos[2].attach(PWM_S2);
   myServos[3].attach(PWM_S3);
