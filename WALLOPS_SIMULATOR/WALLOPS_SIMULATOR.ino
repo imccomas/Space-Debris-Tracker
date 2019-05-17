@@ -74,7 +74,7 @@ void loop() {
     if (Serial1.available()) {
       file = SD.open(filename, FILE_WRITE);
       while (Serial1.available()) {
-        uint8_t f = Serial1.read();
+        char f = Serial1.read();
         file.print(f);
         if (liveFeed) Serial.print(f);
       }
