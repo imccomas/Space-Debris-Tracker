@@ -107,7 +107,6 @@ void setup() {
   myServos[4].write(LAUNCHER_HOME_POS);
   // ---------------
 
-
   if (digitalRead(RBF) == HIGH) rbf = false;
 
   lastTempSend = 0;
@@ -143,7 +142,7 @@ void loop() {
   // ------------------
   // Experiment START code
   // ------------------
-  else if (!started && digitalRead(START) == HIGH) { // Experiment start condition met
+  else if (!started && millis() > 60000 && digitalRead(START) == HIGH) { // Experiment start condition met
 
     started = true;
 

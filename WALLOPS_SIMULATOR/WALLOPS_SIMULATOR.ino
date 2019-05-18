@@ -20,8 +20,8 @@ typedef union {
 
 
 ULONGUNION_t configs[8], timers[4], timerStart[4], timerEnd[4];
-BOOLUNION_t logging;
-bool launched, relays[4], liveFeed = false;
+BOOLUNION_t logging, liveFeed;
+bool launched, relays[4];
 File file;
 char filename[16];
 const String relayNames[4] = { "GSE", "RA", "RB", "TE-1" };
@@ -76,7 +76,7 @@ void loop() {
       while (Serial1.available()) {
         char f = Serial1.read();
         file.print(f);
-        if (liveFeed) Serial.print(f);
+        if (liveFeed.bools) Serial.print(f);
       }
       file.close();
     }
@@ -151,6 +151,8 @@ void menuLoop() {
 
       case '5': //Edit telem settings
         editTelem();
+        editLiveView();
+        printMenu();
         break;
 
       case '6': //manual controls
@@ -229,6 +231,7 @@ bool loadConfig() {
       timerStart[i].number = configs[i + 4].number;
     }
     logging.number = file.read();
+    liveFeed.number = file.read();
 
     file.close();
     return true;
@@ -261,6 +264,7 @@ bool writeConfig() {
       }
     }
     file.write(logging.number);
+    file.write(liveFeed.number);
     file.close();
     return true;
   }
@@ -359,6 +363,33 @@ void editTelem() {
     editTelem();
   }
 }
+
+void editLiveView() {
+    String inString = "";
+  Serial.print(F("\nEnable live telemetry feed? (Y/N): "));
+
+  while (Serial.available() == 0) delay(5); // Wait for fat finger input
+  delay(20); // Let the buffer get there
+  while (Serial.available() > 0) {
+    int inChar = Serial.read();
+    if (isAlpha(inChar)) inString += (char)inChar; // convert the incoming byte to a char and add it to the string
+  }
+  inString.toUpperCase();
+  if (inString[0] == 'Y') {
+    Serial.println('Y');
+    liveFeed.bools = true;
+  }
+  else if (inString[0] == 'N') {
+    Serial.println('N');
+    liveFeed.bools = false;
+  }
+  else {
+    Serial.println(inString[0]);
+    Serial.println(F("Try again."));
+    editLiveView();
+  }
+}
+
 void displayTimers() {
   Serial.println(F("\nCurrent timer settings (in seconds):\n"));
   Serial.println(F("\tGSE  \t\t\tREDUNDANT\t\tTE-1"));
@@ -384,6 +415,9 @@ void displayTelem() {
   Serial.print(F("LOGGING: "));
   if (logging.bools) Serial.println(F("ENABLED"));
   else Serial.println(F("DISABLED"));
+  Serial.print(F("LIVE FEED: "));
+  if (liveFeed.bools) Serial.println(F("ENABLED"));
+  else Serial.println(F("DISABLED"));  
 }
 
 void printHeader() {
