@@ -110,7 +110,7 @@ void setup() {
 
   if (digitalRead(RBF) == HIGH) { // Remove Beofre Flight pin is present at power on
     rbf = false; 
-    Serial.println(("-- RBF Inhibitor PRESENT --"));
+    Serial.println(F("-- RBF Inhibitor PRESENT at POWERON --"));
   }
 
   lastTempSend = 0;
