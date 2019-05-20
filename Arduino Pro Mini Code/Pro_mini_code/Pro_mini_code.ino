@@ -23,6 +23,7 @@
 #define SLAVE_ADR 0x10 // Slave address used by arduino in slave mode
 #define BAUD_RATE 19200 // Rocket telemetry rate
 #define PROCESSING_TIME 5000 // Time delay before asking PIs for data after launch (in ms)
+#define PI_BOOT_TIME 60000 // Time for the R PIs to boot and stop doing weird things on the GPIO PINS
 /*-----------------------*/
 
 /*-- Pin definitions --*/
@@ -94,11 +95,11 @@ void setup() {
   // ---------------
 
   // Attach Servos
-  myServos[0].attach(PWM_S0);
-  myServos[1].attach(PWM_S1);
-  myServos[2].attach(PWM_S2);
-  myServos[3].attach(PWM_S3);
-  myServos[4].attach(PWM_S4);
+  myServos[0].attach(PWM_S0); // Motor Servo
+  myServos[1].attach(PWM_S1); // Tube 1
+  myServos[2].attach(PWM_S2); // Tube 2
+  myServos[3].attach(PWM_S3); // Tube 3
+  myServos[4].attach(PWM_S4); // Tube 4
   // Set all servos to home posistion
   myServos[0].write(CHARGER_HOME_POS);
   myServos[1].write(LAUNCHER_HOME_POS);
@@ -107,7 +108,10 @@ void setup() {
   myServos[4].write(LAUNCHER_HOME_POS);
   // ---------------
 
-  if (digitalRead(RBF) == HIGH) rbf = false;
+  if (digitalRead(RBF) == HIGH) { // Remove Beofre Flight pin is present at power on
+    rbf = false; 
+    Serial.println(("-- RBF Inhibitor PRESENT --"));
+  }
 
   lastTempSend = 0;
 }
@@ -139,26 +143,10 @@ void loop() {
     sendTempTelem(probeData);
   }
 
-  // ------------------
-  // Experiment START code
-  // ------------------
-  else if (!started && millis() > 60000 && digitalRead(START) == HIGH) { // Experiment start condition met
-
-    started = true;
-
-    Serial.println(F("*************************"));
-    Serial.print(F("START Command received at "));
-    Serial.print(millis());
-    Serial.println(F("ms."));
-    Serial.println(F("*************************"));
-    sequence = 1; // Set flag to start value
-    nextEvent = millis() + 1000; // Begin next event in 1 second
-  }
-
   // ----------------
   // Check if event timer has ended
   // ----------------
-  else if (nextEvent != 0 && nextEvent >= millis()) { // Time has elapsed for next event
+  else if (nextEvent != 0 && nextEvent <= millis()) { // Time has elapsed for next event
 
     switch (sequence) { // Sequence of events that occur.
 
@@ -238,7 +226,7 @@ void loop() {
         break;
 
       case 13: // Launch tube #4
-        launch(3);
+        launch(4);
         nextEvent = millis() + PROCESSING_TIME;
         ++sequence;
         break;
@@ -250,9 +238,26 @@ void loop() {
         break;
 
       default:
-        // Something bad has happened if execution hits here
+        // Something very bad has happened if execution hits here
+        Serial.println(F("My world has been shattered."));
         break;
     }
+  }
+
+  // ------------------
+  // Experiment START code
+  // ------------------
+  else if (!started && millis() > PI_BOOT_TIME && digitalRead(START) == HIGH) { // Experiment start condition met
+
+    started = true;
+
+    Serial.println(F("*************************"));
+    Serial.print(F("START Command received at "));
+    Serial.print(millis());
+    Serial.println(F("ms."));
+    Serial.println(F("*************************"));
+    sequence = 1; // Set flag to start value
+    nextEvent = millis() + 1000; // Begin next event in 1 second
   }
 }
 
@@ -282,7 +287,7 @@ void launch (uint8_t servo) {
   // and they should begin recording for debris launch
   digitalWrite(PI1_TRIG, HIGH);
   digitalWrite(PI2_TRIG, HIGH);
-  delay(20);
+  delay(10);
   digitalWrite(PI1_TRIG, LOW);
   digitalWrite(PI2_TRIG, LOW);
 
@@ -290,7 +295,7 @@ void launch (uint8_t servo) {
   myServos[servo].write(LAUNCHER_HOME_POS); // Make sure servo wants to travel to home posistion
   digitalWrite(SERVOS[servo], HIGH); // Arm launcher servo
 
-  if (rbf || digitalRead(RBF == HIGH)) { // Only move if inhibitor is not present
+  if (rbf || digitalRead(RBF == HIGH)) { // Only move if inhibitor is not present at power on or now
 
     for (int i = LAUNCHER_HOME_POS; i < LAUNCHER_FINAL_POS; ++i) { // Move servo from home posistion to launched posistion
 
@@ -356,6 +361,7 @@ void getPiData() {
   Serial.println(F(" PI #2 DATA ********"));
 
   while (Wire.available()) { // Read data in buffer
+    //TODO: Format Telemetry OUTPUT once Pi data transmission structure is known
     Serial.print(Wire.read()); // Move buffer data directly to telem line
   }
   Serial.println();
