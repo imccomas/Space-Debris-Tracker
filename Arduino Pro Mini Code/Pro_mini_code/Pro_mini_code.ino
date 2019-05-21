@@ -51,7 +51,7 @@ typedef union
   uint8_t bytes[4];
 } FLOATUNION_t;
 
-const int SERVOS[5] = { PWM_S0, PWM_S1, PWM_S2, PWM_S3, PWM_S4 };
+const int SERVOS[5] = { MTR_SRVO, SERVO1, SERVO2, SERVO3, SERVO4 };
 Servo myServos[5];
 uint8_t sequence = 0, launchNum = 0;
 unsigned long lastTempSend, timeCompleted = 0, nextEvent = 0;
@@ -317,7 +317,7 @@ void beginCharging() {
 
 void endCharging() {
   myServos[0].write(CHARGER_HOME_POS); // Move servo to home posistion
-  delay(200); // Wait for servo to move
+  delay(100); // Wait for servo to move
   digitalWrite(MTR, LOW); // Turn off motor
   digitalWrite(MTR_SRVO, LOW); // Turn off motor servo
 
