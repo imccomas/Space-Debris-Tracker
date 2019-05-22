@@ -29,11 +29,11 @@ import cam_func as cf
 bus = smbus.SMBus(1)
 GPIO.setmode(GPIO.BOARD) #sets pin to sense when to transmit
 GPIO.setup(38, GPIO.IN)
+
 state = GPIO.input(38)
 
-#index = 1
 # This is the address we setup in the Arduino Program
-address = 0x10
+address = 0x04
 
 def writeNumber(data): # changed value to data JR
     #Bypassing function, JR
@@ -50,125 +50,104 @@ def readNumber():
 
 
 def bb_1_telemetry():
-    while True:
-        if state:
-            #start_time_bb1 = time.time() 
-            data = cf.BB_1()
-            #elapsed_time = time.time() - start_time_bb1
-            #data = open("Hi.txt", "r")
-            #line = np.array(data)
-            #lines = data.readlines()
-            #lines = np.array(data, dtype = np.int16)
-            command = 0x00
-            while True:
-                if state:
-                    for i in range(len(data)):
-                        print('C1 ', data[0])
-                        print('C1 ', data[1])
-                        print('C1 ', data[2])
-                        bus.write_i2c_block_data(address,command,data[i])
-                        time.sleep(.5)
+    while True and state:
+        
+        #if state:
+        data = cf.BB_1()
+        elapsed_time = time.time() - start_time_bb1
+        time.sleep(1)
+        #data = open("Hi.txt", "r")
+        #line = np.array(data)
+        #lines = data.readlines()
+        lines = np.array(data, dtype = np.int16)
 
-                    #data.close()
+        if elapsed_time >= 10:
+            for line in lines:
+                x = line
+                print(x[0])
+                print(x[1])
+                print(x[2])
+                bus.read_i2c_block_data(address, x[0])
+                bus.read_i2c_block_data(address, x[1])
+                bus.read_i2c_block_data(address, x[2])
+                #print ("RPI: Hi Arduino, I sent you a file")
+            #data.close()
 
-                    #sleep one second
-                    #index += 1
-                    break
+            
+            # sleep one second
+            time.sleep(2)
             break
 
 def bb_2_telemetry():
-    while True:
+    while True and state:
         
-        if state:
-            #start_time_bb2 = time.time() 
-            data = cf.BB_2()
-            #elapsed_time = time.time() - start_time_bb2
-            #time.sleep(1)
-            #data = open("Hi.txt", "r")
-            #line = np.array(data)
-            #lines = data.readlines()
-            #lines = np.array(data, dtype = np.int16)
-            command = 0x00
-            while True:
-                if state:
-                    for i in range(len(data)):
-                        print('C1 ', data[0])
-                        print('C1 ', data[1])
-                        print('C1 ', data[2])
-                        bus.write_i2c_block_data(address,command,data[i])
-                        time.sleep(.5)
+        #if state:
+        #data = cf.BB_1
+        data = open("Hi.txt", "r")
+        lines = data.readlines()
+        lines = np.array(lines, dtype = np.int16)
 
-                    #data.close()
-                    
-                    #sleep one second
-                    #index += 1
-                    break
-            break
+        for line in lines:
+            x = line
+            print(x)
+            bus.read_i2c_block_data(address, x)
+            #print ("RPI: Hi Arduino, I sent you a file")
+        data.close()
+        break
+            
+        # sleep one second
+        time.sleep(2)
 
 def bb_3_telemetry():
-    while True:
+    while True and state:
         
-        if state:
-            #start_time_bb3 = time.time() 
-            data = cf.BB_3()
-            #elapsed_time = time.time() - start_time_bb3
-            #time.sleep(1)
-            #data = open("Hi.txt", "r")
-            #line = np.array(data)
-            #lines = data.readlines()
-            #lines = np.array(data, dtype = np.int16)
-            command = 0x00
-            while True:
-                if state:
-                    for i in range(len(data)):
-                        print('C1 ', data[0])
-                        print('C1 ', data[1])
-                        print('C1 ', data[2])
-                        bus.write_i2c_block_data(address,command,data[i])
-                        time.sleep(.5)
+        #if state:
+        #data = cf.BB_1
+        data = open("Hi.txt", "r")
+        lines = data.readlines()
+        lines = np.array(lines, dtype = np.int16)
+        for line in lines:
+            x = line
+            print(x)
+            bus.read_i2c_block_data(address, x)
+            #print ("RPI: Hi Arduino, I sent you a file")
+        data.close()
 
-                    #data.close()
-
-                    #sleep one second
-                    #index += 1
-                    break
-            break
+            
+        # sleep one second
+        time.sleep(2)
+        break
     
 def bb_4_telemetry():
-    while True:
+    while True and state:
         
-        if state:
-            #start_time_bb4 = time.time() 
-            data = cf.BB_4()
-            #elapsed_time = time.time() - start_time_bb4
-            #time.sleep(1)
-            #data = open("Hi.txt", "r")
-            #line = np.array(data)
-            #lines = data.readlines()
-            #lines = np.array(data, dtype = np.int16)
-            command = 0x00
-            while True:
-                if state:
-                    for i in range(len(data)):
-                        print('C1 ', data[0])
-                        print('C1 ', data[1])
-                        print('C1 ', data[2])
-                        bus.write_i2c_block_data(address,command,data[i])
-                        time.sleep(.5)
+        #if state:
+        #data = cf.BB_1
+        data = open("Hi.txt", "r")
+        lines = data.readlines()
+        lines = np.array(lines, dtype = np.int16)
+        for line in lines:
+            x = line
+            print(x)
+            bus.read_i2c_block_data(address, x)
+            #print ("RPI: Hi Arduino, I sent you a file")
+        data.close()
 
-                    #data.close()
+            
+        # sleep one second
+        time.sleep(2)
+        break
 
-                    #sleep one second
-                    #index += 1
-                    break
-            break
+time.sleep(5)
 
-
-
-bb_1_telemetry() 
+start_time_bb1 = time.time()   
+bb_1_telemetry()
 
 bb_2_telemetry()
+time.sleep(1)
 
 bb_3_telemetry()
+time.sleep(1)
 
 bb_4_telemetry()
+time.sleep(1)
