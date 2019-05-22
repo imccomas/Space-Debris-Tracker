@@ -1,3 +1,7 @@
+#RockSat-X 2019 Main i2c bus
+#Written By James Cook
+#Communication between Arduino Master and Pi Slaves
+#Spring 2019
 """
 ###TO DO LIST PLANNING###
 create a detailed timeline of events for the systems
