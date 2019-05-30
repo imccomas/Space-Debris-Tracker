@@ -96,6 +96,8 @@ void setup() {
   myServos[2].attach(PWM_S2); // Tube 2
   myServos[3].attach(PWM_S3); // Tube 3
   myServos[4].attach(PWM_S4); // Tube 4
+  
+  /* Removed for testing
   // Set all servos to home posistion
   myServos[0].write(CHARGER_HOME_POS);
   myServos[1].write(LAUNCHER_HOME_POS);
@@ -103,6 +105,7 @@ void setup() {
   myServos[3].write(LAUNCHER_HOME_POS);
   myServos[4].write(LAUNCHER_HOME_POS);
   // ---------------
+  */
 
   if (digitalRead(RBF) == HIGH) { // Remove Beofre Flight pin is present at power on
     rbf = false;

@@ -53,7 +53,8 @@ typedef union
 } FLOATUNION_t;
 
 const int SERVOS[5] = { MTR_SRVO, SERVO1, SERVO2, SERVO3, SERVO4 };
-Servo myServos[5];
+const int myServos[5] = { PWM_S0, PWM_S1, PWM_S2, PWM_S3, PWM_S4 };
+Servo myServo;
 uint8_t sequence = 0, launchNum = 0;
 unsigned long lastTempSend, timeCompleted = 0, nextEvent = 0;
 bool started = false, rbf = true;
@@ -95,19 +96,22 @@ void setup() {
   digitalWrite(MTR, LOW);
   // ---------------
 
-  // Attach Servos
-  myServos[0].attach(PWM_S0); // Motor Servo
-  myServos[1].attach(PWM_S1); // Tube 1
-  myServos[2].attach(PWM_S2); // Tube 2
-  myServos[3].attach(PWM_S3); // Tube 3
-  myServos[4].attach(PWM_S4); // Tube 4
-  // Set all servos to home posistion
-  myServos[0].write(CHARGER_HOME_POS);
-  myServos[1].write(LAUNCHER_HOME_POS);
-  myServos[2].write(LAUNCHER_HOME_POS);
-  myServos[3].write(LAUNCHER_HOME_POS);
-  myServos[4].write(LAUNCHER_HOME_POS);
-  // ---------------
+  /* Removed for testing
+    // Attach Servos
+    myServos[0].attach(PWM_S0); // Motor Servo
+    myServos[1].attach(PWM_S1); // Tube 1
+    myServos[2].attach(PWM_S2); // Tube 2
+    myServos[3].attach(PWM_S3); // Tube 3
+    myServos[4].attach(PWM_S4); // Tube 4
+
+    // Set all servos to home posistion
+    myServos[0].write(CHARGER_HOME_POS);
+    myServos[1].write(LAUNCHER_HOME_POS);
+    myServos[2].write(LAUNCHER_HOME_POS);
+    myServos[3].write(LAUNCHER_HOME_POS);
+    myServos[4].write(LAUNCHER_HOME_POS);
+    // ---------------
+  */
 
   if (digitalRead(RBF) == HIGH) { // Remove Beofre Flight pin is present at power on
     rbf = false;
@@ -290,15 +294,19 @@ void launch (uint8_t servo) {
   digitalWrite(PI1_TRIG, HIGH);
   delay(10);
   digitalWrite(PI1_TRIG, LOW);
-  delay(250);
+  delay(25);
   digitalWrite(PI2_TRIG, HIGH);
   delay(10);
   digitalWrite(PI2_TRIG, LOW);
-  delay(250);
+  delay(25);
 
+  Serial.print(F("Launching tube #"));
+  Serial.println(servo);
+  
   digitalWrite(LIGHTS, HIGH); // Turn on chamber lights
   delay(250);
-  myServos[servo].write(LAUNCHER_HOME_POS); // Make sure servo wants to travel to home posistion
+  myServo.attach(myServos[servo]);
+  myServo.write(LAUNCHER_HOME_POS); // Make sure servo wants to travel to home posistion
   digitalWrite(SERVOS[servo], HIGH); // Arm launcher servo
 
   if (rbf || digitalRead(RBF == HIGH)) { // Only move if inhibitor is not present at power on or now
@@ -306,7 +314,7 @@ void launch (uint8_t servo) {
     if (servo == 2 || servo == 4)
     {
       for (int i = LAUNCHER_HOME_POS; i < LAUNCHER_FINAL_POS_RIGHT; ++i) { // Move servo from home posistion to launched posistion
-        myServos[servo].write(i);
+        myServo.write(i);
         delay(LAUNCHER_VELOCITY_DELAY);
       }
     }
@@ -315,32 +323,41 @@ void launch (uint8_t servo) {
       for (int i = LAUNCHER_HOME_POS; i > LAUNCHER_FINAL_POS_LEFT; --i) { // Move servo from home posistion to launched posistion
         //Serial.println(i);
 
-        myServos[servo].write(i);
+        myServo.write(i);
         delay(LAUNCHER_VELOCITY_DELAY);
       }
     }
   }
 
   digitalWrite(SERVOS[servo], LOW); // Disarm launcher servo
+  myServo.detach(); // Detach Servo output
+  
   ++launchNum;
 
 }
 
 void beginCharging() {
+  Serial.println(F("Begining Charge."));
+  myServo.attach(myServos[0]); // Attach Motor Servo
   digitalWrite(MTR_SRVO, HIGH); // Turn on power to motor servo
   delay(250);
-  myServos[0].write(CHARGER_ACTIVE_POS); // Move servo to charging posistion
+  myServo.write(CHARGER_ACTIVE_POS); // Move servo to charging posistion
   delay(250);
   digitalWrite(MTR, HIGH); // Turn on motor
+  myServo.detach(); // Detach Motor Servo
 
 }
 
 void endCharging() {
+  Serial.println(F("Ending Charge"));
+  myServo.attach(myServos[0]); // Attach Motor Servo
   digitalWrite(MTR, LOW); // Turn off motor
   delay(250);
-  myServos[0].write(CHARGER_HOME_POS); // Move servo to home posistion
+
+  myServo.write(CHARGER_HOME_POS); // Move servo to home posistion
   delay(250);// Wait for servo to move
   digitalWrite(MTR_SRVO, LOW); // Turn off motor servo
+  myServo.detach(); // Detach Motor Servo
 }
 
 // --------------------
