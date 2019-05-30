@@ -88,11 +88,11 @@ void setup() {
   digitalWrite(PI2_TRIG, LOW);
   digitalWrite(PI1_TRIG, LOW);
   digitalWrite(LIGHTS, LOW);
-  digitalWrite(SERVO4, LOW);
-  digitalWrite(SERVO3, LOW);
-  digitalWrite(SERVO2, LOW);
-  digitalWrite(SERVO1, LOW);
-  digitalWrite(MTR_SRVO, LOW);
+  digitalWrite(SERVO4, HIGH); //Changed from low to High
+  digitalWrite(SERVO3, HIGH); // ""
+  digitalWrite(SERVO2, HIGH); //""
+  digitalWrite(SERVO1, HIGH); //""
+  digitalWrite(MTR_SRVO, HIGH); //""
   digitalWrite(MTR, LOW);
   // ---------------
 
@@ -307,7 +307,7 @@ void launch (uint8_t servo) {
   delay(250);
   myServo.attach(myServos[servo]);
   myServo.write(LAUNCHER_HOME_POS); // Make sure servo wants to travel to home posistion
-  digitalWrite(SERVOS[servo], HIGH); // Arm launcher servo
+  //digitalWrite(SERVOS[servo], HIGH); // Arm launcher servo
 
   if (rbf || digitalRead(RBF == HIGH)) { // Only move if inhibitor is not present at power on or now
 
@@ -329,7 +329,7 @@ void launch (uint8_t servo) {
     }
   }
 
-  digitalWrite(SERVOS[servo], LOW); // Disarm launcher servo
+  //digitalWrite(SERVOS[servo], LOW); // Disarm launcher servo
   myServo.detach(); // Detach Servo output
   
   ++launchNum;
@@ -339,7 +339,7 @@ void launch (uint8_t servo) {
 void beginCharging() {
   Serial.println(F("Begining Charge."));
   myServo.attach(myServos[0]); // Attach Motor Servo
-  digitalWrite(MTR_SRVO, HIGH); // Turn on power to motor servo
+  //digitalWrite(MTR_SRVO, HIGH); // Turn on power to motor servo
   delay(250);
   myServo.write(CHARGER_ACTIVE_POS); // Move servo to charging posistion
   delay(250);
@@ -356,7 +356,7 @@ void endCharging() {
 
   myServo.write(CHARGER_HOME_POS); // Move servo to home posistion
   delay(250);// Wait for servo to move
-  digitalWrite(MTR_SRVO, LOW); // Turn off motor servo
+  //digitalWrite(MTR_SRVO, LOW); // Turn off motor servo
   myServo.detach(); // Detach Motor Servo
 }
 
