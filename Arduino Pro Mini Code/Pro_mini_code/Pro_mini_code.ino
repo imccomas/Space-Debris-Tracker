@@ -76,11 +76,11 @@ void setup() {
   pinMode(PWM_S4, OUTPUT);
   pinMode(PWM_S0, OUTPUT);
   pinMode(LIGHTS, OUTPUT);
-  pinMode(SERVO4, OUTPUT);
-  pinMode(SERVO3, OUTPUT);
-  pinMode(SERVO2, OUTPUT);
-  pinMode(SERVO1, OUTPUT);
-  pinMode(MTR_SRVO, OUTPUT);
+  //pinMode(SERVO4, OUTPUT);
+  //pinMode(SERVO3, OUTPUT);
+  //pinMode(SERVO2, OUTPUT);
+  //pinMode(SERVO1, OUTPUT);
+  //pinMode(MTR_SRVO, OUTPUT);
   pinMode(MTR, OUTPUT);
   // ------------------
 
@@ -88,11 +88,6 @@ void setup() {
   digitalWrite(PI2_TRIG, LOW);
   digitalWrite(PI1_TRIG, LOW);
   digitalWrite(LIGHTS, LOW);
-  digitalWrite(SERVO4, HIGH); //Changed from low to High
-  digitalWrite(SERVO3, HIGH); // ""
-  digitalWrite(SERVO2, HIGH); //""
-  digitalWrite(SERVO1, HIGH); //""
-  digitalWrite(MTR_SRVO, HIGH); //""
   digitalWrite(MTR, LOW);
   // ---------------
 
