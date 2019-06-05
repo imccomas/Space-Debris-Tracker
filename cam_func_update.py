@@ -4,6 +4,9 @@ import numpy as np
 import time
 import picamera
 
+import os.path
+from os import path
+
 
 def BB_1(): 
     start_time_bb1 = time.time()
