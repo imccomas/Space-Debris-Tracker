@@ -206,3 +206,5 @@ bb_2_telemetry()
 bb_3_telemetry()
 
 bb_4_telemetry()
+
+shutdown()
