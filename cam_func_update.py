@@ -4,9 +4,6 @@ import numpy as np
 import time
 import picamera
 
-import os.path
-from os import path
-
 
 def BB_1(): 
     start_time_bb1 = time.time()
@@ -23,7 +20,7 @@ def BB_1():
                 n+=1
             else:
                 break
-        camera.start_recording("Video_Feed_bb1_%d.h264" % n)
+        camera.start_recording("Video_Feed_bb1_%d.h264")
         camera.wait_recording(1)
         camera.capture("backlog_image.jpg",use_video_port=True)
 
