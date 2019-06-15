@@ -23,7 +23,7 @@
 #define TEENSY_ADR 0x66 // I2C address of Teensy board
 #define SLAVE_ADR 0x10 // Slave address used by arduino in slave mode
 #define BAUD_RATE 19200 // Rocket telemetry rate
-#define PROCESSING_TIME 15000 // Time delay before asking PIs for data after launch (in ms)
+#define PROCESSING_TIME 5000 // Time delay before asking PIs for data after launch (in ms)
 #define PI_BOOT_TIME 60000 // Time for the R PIs to boot and stop doing weird things on the GPIO PINS
 /*-----------------------*/
 
@@ -33,8 +33,8 @@
 #define RBF 4 // Remove before flight pin
 #define PWM_S1 10 // Servo 1 signal pin
 #define PWM_S2 9 // Servo 2 signal pin
-#define PI2_TRIG 7 // PI Zero #2 I2C trigger line
-#define PI1_TRIG 8 // PI Zero #1 I2C trigger line
+#define PI2_TRIG 8 // PI Zero #2 I2C trigger line
+#define PI1_TRIG 7 // PI Zero #1 I2C trigger line
 #define PWM_S3 6 // Servo 3 signal line
 #define PWM_S4 5 // Servo 4 signal line
 #define LIGHTS 11 //  Light relay line
@@ -46,6 +46,10 @@
 #define MTR A0 // Motor power control pin
 /*-----------------------*/
 
+/*--Pi telemetry globals--*/
+int piNum;
+bool waitState;
+/*------------------------*/
 typedef union
 {
   int32_t number;
@@ -98,7 +102,6 @@ void setup() {
     myServos[2].attach(PWM_S2); // Tube 2
     myServos[3].attach(PWM_S3); // Tube 3
     myServos[4].attach(PWM_S4); // Tube 4
-
     // Set all servos to home posistion
     myServos[0].write(CHARGER_HOME_POS);
     myServos[1].write(LAUNCHER_HOME_POS);
@@ -159,7 +162,7 @@ void loop() {
 
       case 2: // Read data from PIs
         digitalWrite(LIGHTS, LOW); //Turn off chamber lighting
-        //getPiData();
+        getPiData();
         nextEvent = millis() + 250;
         ++sequence;
         break;
@@ -184,7 +187,7 @@ void loop() {
 
       case 6: // Read Pi data
         digitalWrite(LIGHTS, LOW);
-        //getPiData();
+        getPiData();
         nextEvent = millis() + 500;
         ++sequence;
         break;
@@ -209,7 +212,7 @@ void loop() {
 
       case 10: // Read Pi data
         digitalWrite(LIGHTS, LOW);
-        //getPiData();
+        getPiData();
         nextEvent = millis() + 500;
         ++sequence;
         break;
@@ -234,7 +237,7 @@ void loop() {
 
       case 14: // Read Pi data
         digitalWrite(LIGHTS, LOW);
-        //getPiData();
+        getPiData();
         nextEvent = 0; // End of sequence
         break;
 
@@ -286,6 +289,8 @@ void launch (uint8_t servo) {
 
   // Signal PIs that we are beginning the experiment,
   // and they should begin recording for debris launch
+  digitalWrite(LIGHTS, HIGH); // Turn on chamber lights
+  delay(25);
   digitalWrite(PI1_TRIG, HIGH);
   delay(10);
   digitalWrite(PI1_TRIG, LOW);
@@ -297,9 +302,10 @@ void launch (uint8_t servo) {
 
   Serial.print(F("Launching tube #"));
   Serial.println(servo);
-  
-  digitalWrite(LIGHTS, HIGH); // Turn on chamber lights
+
+
   delay(250);
+
   myServo.attach(myServos[servo]);
   myServo.write(LAUNCHER_HOME_POS); // Make sure servo wants to travel to home posistion
   //digitalWrite(SERVOS[servo], HIGH); // Arm launcher servo
@@ -326,7 +332,7 @@ void launch (uint8_t servo) {
 
   //digitalWrite(SERVOS[servo], LOW); // Disarm launcher servo
   myServo.detach(); // Detach Servo output
-  
+
   ++launchNum;
 
 }
@@ -360,46 +366,56 @@ void endCharging() {
 // the Pi that the Arduino is ready to receive data
 // --------------------
 void getPiData() {
+  waitState = false;
+  piNum = 1;
 
   Serial.println(F("Ending TWI"));
   Wire.end(); // End current I2C Bus
   Wire.begin(SLAVE_ADR); // Open I2C bus as a slave
+  Wire.onReceive(receiveEvent);
   Serial.println(F("In slave mode"));
+
   digitalWrite(PI1_TRIG, HIGH); // Tell Pi #1 we are ready for data
+  Serial.println(F("PI1_TRIG Fired"));
   delay(20);
   digitalWrite(PI1_TRIG, LOW); // Bring trigger line back low
-
-  while (!Wire.available()) { // Wait for data in buffer
+  Serial.println(F("PI1_TRIG off"));
+  while (!waitState)
+  {
     delay(1);
   }
-  Serial.print(F("******** BEGIN LAUNCH #"));
-  Serial.print(launchNum);
-  Serial.println(F(" PI #1 DATA ********"));
-
-  while (Wire.available()) { // Read data in buffer
-    Serial.print(Wire.read()); // Move buffer data directly to telem line
-  }
-  Serial.println();
-  Serial.println(F("******** END PI #1 DATA ********"));
-
-  digitalWrite(PI2_TRIG, HIGH); // Tell Pi #2 we are ready for data
+  waitState = false;
+  digitalWrite(PI2_TRIG, HIGH); // Tell Pi #1 we are ready for data
+  Serial.println(F("PI2_TRIG Fired"));
   delay(20);
   digitalWrite(PI2_TRIG, LOW); // Bring trigger line back low
-
-  while (!Wire.available()) { // Wait for data in buffer
+  Serial.println(F("PI2_TRIG off"));
+  while (!waitState)
+  {
     delay(1);
   }
-  Serial.print(F("******** BEGIN LAUNCH #"));
-  Serial.print(launchNum);
-  Serial.println(F(" PI #2 DATA ********"));
 
-  while (Wire.available()) { // Read data in buffer
-    //TODO: Format Telemetry OUTPUT once Pi data transmission structure is known
-    Serial.print(Wire.read()); // Move buffer data directly to telem line
-  }
-  Serial.println();
-  Serial.println(F("******** END PI #2 DATA ********"));
 
   Wire.end(); // End slave mode
+  delay(2);
   Wire.begin(); // Return to master mode
+}
+
+void receiveEvent(int dataSet) {
+  //Serial.print(F("******** BEGIN LAUNCH #"));
+  //Serial.print(launchNum);
+  //Serial.print(F(" for pi #"))
+  //Serial.print(piNum);
+  //Serial.println(F(" DATA ********"));
+
+  while (Wire.available()) { // Read data in buffer
+    Serial.println(Wire.read()); // Move buffer data directly to telem line
+  }
+  Serial.println();
+  Serial.print(F("******** END PI #"));
+  Serial.print(piNum);
+  Serial.println(F(" DATA ********"));         // print the integer
+  waitState = true;
+  piNum += 1;
+
 }
