@@ -27,6 +27,8 @@ def BB_1(): #the control launch for the experiment, this will be fired before an
                 break #if not move on
 
         camera.start_recording("Video_Feed_bb1_%d.h264" % n) #start the recording
+        camera.shutter_speed = camera.exposure_speed
+        camera.exposure_mode = 'off'
         camera.capture("backlog_image.jpg",use_video_port=True) #take the background image
 
         #Image break down proccess for library image
@@ -37,7 +39,7 @@ def BB_1(): #the control launch for the experiment, this will be fired before an
         background = np.array(background,dtype=np.int16) #convert data type for later numerical analysis
         
 
-        while elapsed_time < 8: #continue filming and data collection process for (8) seconds
+        while elapsed_time < 6: #continue filming and data collection process for (8) seconds
             
             elapsed_time = time.time() - start_time_bb1 #keeping track of time
             
@@ -52,7 +54,7 @@ def BB_1(): #the control launch for the experiment, this will be fired before an
             new_array = np.array(new_array,dtype=np.int16) #convert date type
             
             diff_matrix = new_array.__sub__(background) #make a numerical comparison with background image (taking the difference between the two)
-            find = np.where(np.abs(diff_matrix)>10) #find where the differences are within the matrix current threshhold is (10)
+            find = np.where(np.abs(diff_matrix)>20) #find where the differences are within the matrix current threshhold is (10)
 
             if not np.any(find[0]): #if no movement is found (ie- nothing new pops up in the image)
                 location = [0,0] #set location to 0
@@ -99,6 +101,8 @@ def BB_2(): #fist experiment launch, second overall launch
                 break #if not move on
 
         camera.start_recording("Video_Feed_bb2_%d.h264" % n) #start the recording
+        camera.shutter_speed = camera.exposure_speed
+        camera.exposure_mode = 'off'
         camera.capture("backlog_image_bb2.jpg",use_video_port=True) #take the background image
 
         #Image break down proccess for library image
@@ -124,7 +128,7 @@ def BB_2(): #fist experiment launch, second overall launch
             new_array = np.array(new_array,dtype=np.int16) #convert date type
             
             diff_matrix = new_array.__sub__(background) #make a numerical comparison with background image (taking the difference between the two)
-            find = np.where(np.abs(diff_matrix)>10) #find where the differences are within the matrix current threshhold is (10)
+            find = np.where(np.abs(diff_matrix)>20) #find where the differences are within the matrix current threshhold is (10)
 
             if not np.any(find[0]): #if no movement is found (ie- nothing new pops up in the image)
                 location = [0,0] #set location to 0
@@ -171,6 +175,8 @@ def BB_3(): #second experimental launch, third launch overall
                 break #if not move on
 
         camera.start_recording("Video_Feed_bb3_%d.h264" % n) #start the recording
+        camera.shutter_speed = camera.exposure_speed
+        camera.exposure_mode = 'off'
         camera.capture("backlog_image.jpg",use_video_port=True) #take the background image
 
         #Image break down proccess for library image
@@ -196,7 +202,7 @@ def BB_3(): #second experimental launch, third launch overall
             new_array = np.array(new_array,dtype=np.int16) #convert date type
             
             diff_matrix = new_array.__sub__(background) #make a numerical comparison with background image (taking the difference between the two)
-            find = np.where(np.abs(diff_matrix)>10) #find where the differences are within the matrix current threshhold is (10)
+            find = np.where(np.abs(diff_matrix)>20) #find where the differences are within the matrix current threshhold is (10)
 
             if not np.any(find[0]): #if no movement is found (ie- nothing new pops up in the image)
                 location = [0,0] #set location to 0
@@ -243,6 +249,8 @@ def BB_4(): #third experimental launch, fourth overall
                 break #if not move on
 
         camera.start_recording("Video_Feed_bb4_%d.h264" % n) #start the recording
+        camera.shutter_speed = camera.exposure_speed
+        camera.exposure_mode = 'off'
         camera.capture("backlog_image.jpg",use_video_port=True) #take the background image
 
         #Image break down proccess for library image
@@ -268,7 +276,7 @@ def BB_4(): #third experimental launch, fourth overall
             new_array = np.array(new_array,dtype=np.int16) #convert date type
             
             diff_matrix = new_array.__sub__(background) #make a numerical comparison with background image (taking the difference between the two)
-            find = np.where(np.abs(diff_matrix)>10) #find where the differences are within the matrix current threshhold is (10)
+            find = np.where(np.abs(diff_matrix)>20) #find where the differences are within the matrix current threshhold is (10)
 
             if not np.any(find[0]): #if no movement is found (ie- nothing new pops up in the image)
                 location = [0,0] #set location to 0
