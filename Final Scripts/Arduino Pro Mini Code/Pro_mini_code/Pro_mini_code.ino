@@ -474,7 +474,7 @@ void getPiData() {
     delay(1);
   }
   waitState = false;
-  digitalWrite(PI2_TRIG, HIGH); // Tell Pi #1 we are ready for data
+  digitalWrite(PI2_TRIG, HIGH); // Tell Pi #2 we are ready for data
   Serial.println(F("PI2_TRIG Fired"));
   delay(20);
   digitalWrite(PI2_TRIG, LOW); // Bring trigger line back low
