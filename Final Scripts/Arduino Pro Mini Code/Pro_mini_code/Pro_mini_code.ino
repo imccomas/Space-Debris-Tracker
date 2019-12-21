@@ -1,6 +1,7 @@
 // Rocksat-x 2019 Primary Motherboard software
 // ---
 // Written by: Ryan Wade
+// Edited by: Ian McComas
 // ---
 // This program controls CCofCO's rocksat-x payload, as well as telemeters data to the rocket
 
